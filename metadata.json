@@ -1,0 +1,6 @@
+{
+  "name": "Live Practice Simulator",
+  "description": "An advanced live stream practice simulator with real-time viewer simulation, chat, reactions, AI coach with high thinking mode, and Google Mobile Ads SDK integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

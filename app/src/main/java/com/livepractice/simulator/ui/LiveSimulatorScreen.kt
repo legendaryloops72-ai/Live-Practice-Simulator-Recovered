@@ -398,7 +398,11 @@ fun LiveSimulatorScreen(
         // Real Camera Preview Background or Fallback
         if (cameraPermissionState.status.isGranted && isCameraOn) {
             Box(modifier = Modifier.fillMaxSize()) {
-                AndroidView(
+                // Recreate the preview only when the lens changes. Rebinding
+                // from AndroidView.update on every Compose recomposition can
+                // race CameraX on Pixel devices and cause a black preview.
+                key(cameraFacing) {
+                    AndroidView(
                     modifier = Modifier.fillMaxSize(),
                     factory = { ctx ->
                         val previewView = PreviewView(ctx)
@@ -423,31 +427,9 @@ fun LiveSimulatorScreen(
                             }
                         }, ContextCompat.getMainExecutor(ctx))
                         previewView
-                    },
-                    update = { view ->
-                        val ctx = view.context
-                        val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
-                        cameraProviderFuture.addListener({
-                            val cameraProvider = cameraProviderFuture.get()
-                            val preview = Preview.Builder().build().also {
-                                it.setSurfaceProvider(view.surfaceProvider)
-                            }
-                            val cameraSelector = CameraSelector.Builder()
-                                .requireLensFacing(cameraFacing)
-                                .build()
-                            try {
-                                cameraProvider.unbindAll()
-                                cameraProvider.bindToLifecycle(
-                                    lifecycleOwner,
-                                    cameraSelector,
-                                    preview
-                                )
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                        }, ContextCompat.getMainExecutor(ctx))
                     }
-                )
+                    )
+                }
             }
         } else {
             Box(
@@ -1615,4 +1597,3 @@ fun FeatureRow(icon: String, text: String) {
         )
     }
 }
-
